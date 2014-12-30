@@ -1,0 +1,397 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="CSS/reset.css" media="all" />
+    <link rel="stylesheet" type="text/css" href="CSS/main.css" media="all" />
+    <link rel="stylesheet" type="text/css" href="CSS/dialog.css" media="all" />
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css">
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.5.2/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="JS/zepto.js"></script>
+    <script type="text/javascript" src="JS/dialog_min.js"></script>
+    <script type="text/javascript" src="JS/player_min.js"></script>
+    <script type="text/javascript" src="JS/main.js"></script>
+    <script src="JS/jquery.query.js"></script>
+    <title>砸金蛋</title>
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+    <meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+    <!-- Mobile Devices Support @begin -->
+    <meta content="application/xhtml+xml;charset=UTF-8" http-equiv="Content-Type">
+    <meta content="telephone=no, address=no" name="format-detection">
+    <meta name="apple-mobile-web-app-capable" content="yes" /> <!-- apple devices fullscreen -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <!-- Mobile Devices Support @end -->
+    <link rel="shortcut icon" href="http://stc.weimob.com/img/favicon.ico" />
+</head>
+<body onselectstart="return true;" ondragstart="return false;">
+
+<script> 
+    /* I modified here 1*/
+    document.addEventListener("DOMContentLoaded", function(){
+
+        //
+        var shape = document.getElementById("shape");
+        var hitObj = {
+            handleEvent: function(evt){
+                if("SPAN" == evt.target.tagName){
+                    var audio = new Audio();
+                    audio.src = "http://video.weimob.com/video/ff/bd/6c/mp3/20131213/smashegg.mp3";
+                    audio.play();
+                    setTimeout(function(){
+                        evt.target.classList.toggle("on");
+                        //var rand = Math.round(Math.random()*10);
+                        var wgateid = $.query.get("wgateid");
+                        var verify = $.query.get("verify");
+
+                        $.ajax({
+                            url: "./server/verify_user.php",
+                            type: "GET",
+                            dataType: "text",
+                            async:false,
+                            data: "wgateid=" + wgateid + "&verify=" + verify,
+                            success: function(prizeCode){
+                                res = prizeCode.replace(/\s/g, '');
+                                //alert("res=" + res);
+
+                                if ("notWeChat" == res) { // not accessing from wechat
+                                    alert("亲，一定要从微信登录才能参与活动唷～");
+                                    return;
+                                }
+
+                                if ("playedThreeTimes" == res) { // have played 3 times
+                                    alert("亲你已经砸过三次了，不能再砸了，蛋都碎了呀 T_T");
+                                    return;
+                                }
+
+                                if ("cannotConnectDb" == res) { // db connection problem
+                                    alert("啊哦，出了点意外，网络似乎有问题，亲再打开一遍试试？……");
+                                    return;
+                                }
+
+                                var prizeChn = "";
+                                switch (res) {
+                                    case "1":
+                                    case "2": prizeChn = "一等"; break;
+                                    case "3": prizeChn = "二等"; break;
+                                    case "4": prizeChn = "三等"; break;
+                                    case "5": prizeChn = "幸运"; break;
+                                    default: {
+                                        alert("无法连接服务器，亲你不要走嘛再刷新一下试试嘛~~");
+                                        return;
+                                    }
+                                }
+                                //prizeChn="一等";
+                                var prizeInfo = "恭喜亲，中了" + prizeChn + "奖哟！赶快填写你的联系方式，来领取奖品吧！";
+
+                               
+                                // var getPrize = 1; // get the prize
+                                getPrize(prizeInfo, prizeChn);
+                              
+                            }
+                        });
+
+                    }, 100);
+                    $("#hit").addClass("on").css({left: evt.pageX+"px", top:evt.pageY +"px"});
+                }
+                //shape.classList.toggle("pause");
+                shape.removeEventListener("click", hitObj, false);
+                //setTimeout(function(){$("#hit").removeClass("on");}, 1500);
+            }
+        }
+        shape.addEventListener("click", hitObj, false);
+    }, false);
+    /* Modification 1 over */
+</script>
+<div class="body pb_10">
+    <div style="position:absolute;left:10px;top:10px;z-index:350;">
+        <a href="javascript:;" id="playbox" class="btn_music" onclick="playbox.init(this).play();" ontouchstart="event.stopPropagation();"></a><audio id="audio" loop src="http://video.weimob.com/video/ff/bd/6c/mp3/20131213/default.mp3" style="pointer-events:none;display:none;width:0!important;height:0!important;"></audio>
+    </div>
+    <script type="text/javascript">
+        playbox.init("playbox");
+    </script>
+    <section class="stage">
+        <img src="images/stage.jpg" />
+        <div id="shape" class="cube on">
+            <div class="plane one"><span><figure>&nbsp;</figure></span></div>
+            <div class="plane two"><span><figure>&nbsp;</figure></span></div>
+            <div class="plane three"><span><figure>&nbsp;</figure></span></div>
+        </div>
+        <div id="hit" class="hit"><img src="images/1.png" /></div>
+    </section>
+    <section>
+        <div class="instro_wall">
+            <article>
+                <h6>活动说明</h6>
+                <div>
+                    <p>
+                        1.活动期间，亲们只要砸开金蛋，即有机会获得$50-$200的代金券，每个人一共有三次机会噢。					</p>
+                    <br/>
+                    <p>
+                        2.活动时间：2014年10月11日至2014年12月31日，超过期限奖品将自动失效哦。					</p>
+                    <br/>
+                    <p>
+                        3.中奖后请致电+61 (02) 9191 7595预约来我们公司领取奖品。					</p>
+                    <br/>
+                    <p>
+                        4.凡在德勤DILIGENCE申请办理留学，移民，实习培训等任何业务，均可使用本券直接代替现金使用哟。					</p>
+                    <br/>
+                    <p>
+                        ---本活动最终解释权归DILIGENCE德勤所有！					</p>
+
+                </div>
+            </article>
+            <article class="a3">
+                <h6>活动奖项</h6>
+                <div>
+                    <ul>
+                        <ol>
+			    <li><p>&nbsp;</p><label>&nbsp;</label></li>
+                            <li>
+                                <p>
+                                    一等奖<label class="color_golden"></label>
+                                </p>
+                                <label>200澳币代金券</label>
+                            </li>
+			    <li><p>&nbsp;</p><label>&nbsp;</label></li>
+                            <li>
+                                <p>
+                                    二等奖<label class="color_golden"></label>
+                                </p>
+                                <label>150澳币代金券</label>
+                            </li>
+                            <li>
+                                <p>
+                                    三等奖<label class="color_golden"></label>
+                                </p>
+                                <label>100澳币代金券</label>
+                            </li>
+                            <li>
+                                <p>
+                                    幸运奖<label class="color_golden"></label>
+                                </p>
+                                <label>50澳币代金券</label>
+
+                            </li>
+                        </ol>
+
+                    </ul>
+                </div>
+
+
+            </article>
+
+
+        </div>
+    </section>
+    <footer style="text-align:center; color:#fff;margin-right:20px"><a href="" style="color:#fff;">©xiaoYandNull</a></footer>
+</div>
+
+<script>
+//领取
+function getPrize(prizeInfo, prizeChn){
+    var d2 = new iDialog();
+    d2.open({
+        classList: "get",
+        title:"",
+        close:"",
+        content: '<div class="header"><h6>' + prizeInfo + '</h6></div>\
+				<table>\
+					<tr><td><input type="text" id="name" placeholder="领奖人姓名" maxlength="64" /></td></tr>\
+					<tr><td><input type="text" id="phone" placeholder="领奖人手机号码" maxlength="16" /></td></tr>\
+                    <tr><td><input type="text" id="mailAddr" placeholder="领奖人邮箱" maxlength="255" /></td></tr>\
+                    <tr><td><input type="text" id="qq" placeholder="领奖人QQ" minlength="5" maxlength="11"/></td></tr>\
+                    <tr><td><input type="text" id="interest" placeholder="我想咨询关于留学/移民/实习/。。。"  maxlength="60"/></td></tr>\
+				</table>', 
+        btns:[
+            {id:"", name:"领取", onclick:"fn.call();", fn: function(self){
+                var nameTrim = $.trim($("#name").val());
+                var phoneTrim = $.trim($("#phone").val());
+                var mailAddrTrim = $.trim($("#mailAddr").val());
+                var qqTrim = $.trim($("#qq").val());
+                var interTrim = $.trim($("#interest").val());
+
+                if ("" == nameTrim) {
+                    alert("姓名不能为空哦亲～否则我们怎样称呼你呢^_^");
+                    return;
+                }
+
+                if ("" == phoneTrim) {
+                    alert("留个电话嘛亲～我们来做朋友好不好^_^");
+                    return;
+                }
+
+                if ("" == mailAddrTrim) {
+                    alert("我们要用一切方式告诉你中奖啦～所以邮箱不能不填哦^_^");
+                    return;
+                }
+
+                if ("" == qqTrim) {
+                    alert("留个QQ嘛亲～保持联系哦^_^");
+                    return;
+                }
+
+                if ("" == interTrim) {
+                    alert("亲你是想在我们这咨询业务呢还是想在我们这咨询业务呢？填一个嘛 ^_^");
+                    return;
+                }
+
+                if ("length" == checkPhone(phoneTrim)) {
+                    return;
+                }
+
+                if (false == checkPhone(phoneTrim)) {
+                    alert("啊哦，亲的电话号码好奇怪，号码只能为数字哦:)");
+                    return;
+                }
+
+                if ("length" == checkEmail(mailAddrTrim)) {
+                    return;
+                }
+
+                if (false == checkEmail(mailAddrTrim)) {
+                    alert("亲，邮箱的格式不对哦~");
+                    return;
+                }
+
+                if ("length" == checkQq(qqTrim)) {
+                    alert("亲，目前QQ号的长度是5位到11位哟，再检查一下吧^_^");
+                    return;
+                }
+
+                if (false == checkQq(qqTrim)) {
+                    alert("亲，QQ号由数字组成且首位不为0，别填错了哟:)");
+                    return;
+                }
+
+                //alert("verify succeed");
+                var obj = {
+                    name: nameTrim,
+                    phone: phoneTrim,
+                    mailAddr: mailAddrTrim,
+                    qq: qqTrim,
+                    interest: interTrim
+                };
+
+                $.ajax({
+                    url:"./server/info.php",
+                    type:"POST",
+                    data:obj,
+                    dataType: "text",
+                    success: function(res){
+			resNew = res.replace(/\s/g, '');
+			    if ("connError" == resNew) {
+			    alert("您的网络不太好，请稍后重试");
+                        } else {
+			    getPrizeSuccess(resNew, nameTrim, prizeChn);
+			    self.die();
+                        }
+                    }
+
+                    // Error information
+                    // error: function(errorThrown, textStatus) {
+                        // alert("error:" + errorThrown + ", textstat:" + textStatus);
+                    // }
+                });
+            }},
+            {id:"", name:"关闭", onclick:"fn.call();", fn: function(self){
+                //if('no' != arg.loca){
+                  //  location.href = location.href + "&r="+Math.random();
+                //}
+                self.die();
+            }}
+        ]
+    });
+}
+
+//领取结果-成功
+function getPrizeSuccess(voucherCode, name, prizeInfo){
+    var d5 = new iDialog();
+    d5.open({
+        classList: "success",
+        title:"",
+        close:"",
+        content:'<div class="header"><h6>兑奖券</h6></div>\
+				<table><tr>\
+					<td><img src="images/7.png" /></td>\
+					<td style="width:170px;"><label>亲爱哒' + name + '：<br />恭喜您中了' + prizeInfo + '奖，您的兑奖码为' + voucherCode + '。<br />马上致电德勤，兑换奖金吧！<br />咨询领取电话：<br /><b>+61 (02) 91917595</b><br /> <font color="red">亲，一定记得截图保留此兑奖券，作为有效兑奖证明^O^</font> </label></td>\
+				</tr></table>',
+        btns:[
+            {id:"", name:"知道了", onclick:"fn.call();", fn: function(self){
+                location.href = location.href + "&r="+Math.random();
+                self.die();
+            }}
+        ]
+    });
+}
+
+/* Check user's input */
+function checkByReg(str, regex) {
+    var regexp = new RegExp(regex);
+    return (regexp.test(str));
+}
+
+function checkPhone(phone) {
+    if (phone.length < 6) {
+        alert("手机号码好像有点短哦亲，再检查一下呗^_^");
+        return "length";
+    }
+
+    if (phone.length > 32) {
+        alert("手机号码好像有点长哦亲，再检查一下呗^_^");
+        return "length";
+    }
+
+    var regPhone = "^[0-9]*$";
+    return checkByReg(phone, regPhone);
+}
+
+function checkEmail(email) {
+    if (email.length > 255) {
+        alert("亲的邮箱地址过长，能换一个不？^_^");
+        return "length";
+    }
+
+    var regEmail = "^[a-z0-9]+[._\\-]*[a-z0-9]*@[a-z0-9]+[-a-z0-9]*[a-z0-9]+.{1,63}[a-z0-9]+$";
+    return checkByReg(email, regEmail);
+}
+
+function checkQq(qq) {
+    if (qq.length < 5) {
+        return "length";
+    }
+
+    if (qq.length > 11) {
+        return "length";
+    }
+
+    var regQq = "^[1-9][0-9]*$";
+    return checkByReg(qq, regQq);
+}
+
+/* 复写默认的alert */
+window.alert = function(str){
+    var d7 = new iDialog();
+    d7.open({
+        classList: "alert",
+        title:"",
+        close:"",
+        content:str,
+        btns:[
+            {id:"", name:"确定", onclick:"fn.call();", fn: function(self){
+                self.die();
+            }}
+        ]
+    });
+}
+
+</script>
+
+
+<div mark="stat_code" style="width:0px; height:0px; display:none;">
+</div>
+</body>
+
+</html>
+
